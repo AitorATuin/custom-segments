@@ -1,2 +1,6 @@
 .ropeproject
 *.pyc
+__pychache__
+__pychache__/*
+.mypy_cache/*
+.mypy_cache
