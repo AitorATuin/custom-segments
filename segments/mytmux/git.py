@@ -198,8 +198,20 @@ def git_from_path(path: Path) -> Optional['GitRepo']:
 @requires_segment_info
 class GitSegment(Segment):
     def __call__(self, pl, segment_info, **kwargs) -> List[Seg]:
-        git = git_from_path(Path(segment_info['getcwd']()))
         segments = []  # type: List[Optional[Seg]]
+        args = segment_info['args']
+        pane_id = args.renderer_arg.get('pane_id')
+        if pane_id is None:
+            pl.debug('No found pane_id in %s' % segment_info['args'].renderer_arg)
+            return segments
+        environ = segment_info['environ']
+        path = environ.get('TMUX_PWD_{}'.format(pane_id))
+        if not path:
+            pl.debug('No found path in %s for pane_id %s' % ([[e,v] for e, v in environ.items() if e.startswith('TMUX_PWD')], pane_id))
+            return segments
+        pl.debug('PWD is %s and pane is %s' % (path, pane_id))
+        git = git_from_path(Path(segment_info['getcwd']()))
+
         if git:
             segments = [
                 git.branch_segment(),
@@ -208,8 +220,8 @@ class GitSegment(Segment):
                 git.files_segment(),
                 git.red_segment(),
             ]
-        pl.info('segments %s' % segments)
-        return [s for s in segments if s]
+            pl.debug('Segments are %s' % segments)
+            return [s for s in segments if s]
 
 
 git = with_docstring(GitSegment(),
