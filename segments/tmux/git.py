@@ -203,12 +203,12 @@ class GitSegment(Segment):
         pane_id = args.renderer_arg.get('pane_id')
         if pane_id is None:
             pl.debug('No found pane_id in %s' % segment_info['args'].renderer_arg)
-            return segments
+            return []
         environ = segment_info['environ']
         path = environ.get('TMUX_PWD_{}'.format(pane_id))
         if not path:
             pl.debug('No found path in %s for pane_id %s' % ([[e,v] for e, v in environ.items() if e.startswith('TMUX_PWD')], pane_id))
-            return segments
+            return []
         pl.debug('PWD is %s and pane is %s' % (path, pane_id))
         git = git_from_path(Path(segment_info['getcwd']()))
 
@@ -222,6 +222,7 @@ class GitSegment(Segment):
             ]
             pl.debug('Segments are %s' % segments)
             return [s for s in segments if s]
+        return []
 
 
 git = with_docstring(GitSegment(),
