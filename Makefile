@@ -2,7 +2,7 @@ PYTHON_VENV=python3 -m venv
 VIRTUALENV_PYTHON=./virtualenv/bin/python3
 VIRTUALENV_PIP=./virtualenv/bin/python3 -m pip
 VIRTUALENV_MYPY=./virtualenv/bin/python3 -m mypy
-VIRTUALENV_PYTEST=./virtualenv/bin/python3 -m pytest
+VIRTUALENV_PYTEST=./virtualenv/bin/python3 -m pytest -v
 
 
 .PHONY: test lint
