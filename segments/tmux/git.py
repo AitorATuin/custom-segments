@@ -37,9 +37,9 @@ class GitStatus(Enum):
 
 class Branch(NamedTuple):
     head: str
-    upstream: str
-    ahead: int
-    behind: int
+    upstream: Optional[str]
+    ahead: Optional[int]
+    behind: Optional[int]
 
 
 class GitRepo(NamedTuple):
@@ -111,14 +111,28 @@ def capture(regex: Pattern, value: str, min_items: int = 1) -> List[str]:
 def parse_branch_data(data: List[str]) -> Tuple[List[str], Branch]:
     if not data:
         raise BranchParseError()
+    new_data = []
+    head = None  # type: Optional[str]
+    upstream = None  # type: Optional[str]
+    ahead = None  # type: Optional[int]
+    behind = None  # type: Optional[int]
+    for line in data:
+        if line.startswith('#'):
+            _, branch_prefix, *branch_data = line.split(' ')
+            if branch_prefix == 'branch.head':
+                head = branch_data[0]
+            elif branch_prefix == 'branch.upstream':
+                upstream = branch_data[0]
+            elif branch_prefix == 'branch.ab':
+                ahead, behind = [int(i[1:]) for i in branch_data]
+        else:
+            new_data.append(line)
 
-    branch_info, rest_info = data[1:4], data[4:]
-    head = capture(BRANCH_HEAD_REGEX, branch_info[0], 1)[0]
-    upstream = capture(BRANCH_UPSTREAM_REGEX, branch_info[1], 1)[0]
-    branch_ab = capture(BRANCH_AB_REGEX, branch_info[2], 2)
-    ahead, behind = branch_ab[:2]
+    if head is None:
+        raise BranchParseError()
 
-    return rest_info, Branch(head = head, upstream = upstream, ahead = int(ahead), behind = int(behind))
+    return new_data, Branch(head = head, upstream = upstream, ahead = ahead,
+                            behind = behind)
 
 
 def parse_staged_files_data(data: List[str]) -> Tuple[List[str], List[Path], List[Path]]:
