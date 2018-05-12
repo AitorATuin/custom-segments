@@ -16,6 +16,19 @@ BRANCH_UNSTAGED_REGEX = re.compile('\.\w')
 GIT_STATUS_CMD = ['git', 'status', '--porcelain=v2', '--branch', '--ignored']
 GIT_STASH_CMD1 = ['git', 'stash', 'list']
 
+COLORS = {
+    'gitstatus': {
+        'clean': ['branch:clean'],
+        'dirty': ['branch:dirty'],
+        'broken': ['branch:broken'],
+        'default': ['branch:clean'],
+    },
+    'branch': ['branch:name'],
+    'files': ['files:info'],
+    'stash': ['files:info'],
+    'red': ['battery_full'],
+}
+
 
 Seg = Dict[str, Any]
 
@@ -25,15 +38,27 @@ class GitStatus(Enum):
     DIRTY = 2
     BROKEN = 3
 
-    def __str__(self) -> str:
+    def segment(self) -> Seg:
+        contents = ''
+        highlight_groups = []
         if self == GitStatus.CLEAN:
-            return '✔'
+            contents = '✔'
+            highlight_groups = COLORS['gitstatus']['clean']
         elif self == GitStatus.DIRTY:
-            return '⨀ ' 
+            contents = '⨀ '
+            highlight_groups = COLORS['gitstatus']['dirty']
         elif self == GitStatus.BROKEN:
-            return '✘'
+            contents = '✘'
+            highlight_groups = COLORS['gitstatus']['broken']
         else:
-            return '⁉'
+            contents = '⁉'
+            highlight_groups = COLORS['gitstatus']['default']
+
+        return {
+            'contents': contents,
+            'highlight_groups': highlight_groups,
+            'draw_inner_divider': True
+        }
 
 class Branch(NamedTuple):
     head: str
@@ -64,6 +89,7 @@ class GitRepo(NamedTuple):
         return {
             'contents': '╱'.join(files_info),
             'draw_inner_divider': True,
+            'highlight_groups': COLORS['files']
         }
 
     def branch_segment(self) -> Optional[Seg]:
@@ -71,25 +97,25 @@ class GitRepo(NamedTuple):
         return {
             'contents': contents,
             'draw_inner_divider': True,
+            'highlight_groups': COLORS['branch']
         }
 
     def status_segment(self) -> Optional[Seg]:
-        return {
-            'contents': str(self.status),
-            'draw_inner_divider': True,
-        }
+        return self.status.segment()
 
     def stash_segment(self) -> Optional[Seg]:
         if self.stashed:
             return {
                 'contents': '⚑{}'.format(self.stashed),
                 'draw_inner_divider': True,
+                'highlight_groups' : COLORS['stash']
             }
         return None
 
     def red_segment(self) -> Optional[Seg]:
         return {
             'contents': '☭',
+            'highlight_groups': COLORS['red']
         }
 
 
