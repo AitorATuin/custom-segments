@@ -80,8 +80,6 @@ class GitRepo(NamedTuple):
         files_info = []
         if self.staged:
             files_info.append('⚫{}'.format(len(self.staged)))
-        if self.staged:
-            files_info.append('{}'.format(len(self.staged)))
         if self.unstaged:
             files_info.append('±{}'.format(len(self.unstaged)))
         if self.untracked: 
