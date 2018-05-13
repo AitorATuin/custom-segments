@@ -18,7 +18,7 @@ GIT_STASH_CMD1 = ['git', 'stash', 'list']
 
 COLORS = {
     'gitstatus_clean': ['git:branch_clean'],
-    'gistatus_dirty': ['git:branch_dirty'],
+    'gitstatus_dirty': ['git:branch_dirty'],
     'gitstatus_broken': ['git:branch_broken'],
     'gitstatus_default': ['git:branch_clean'],
     'branch': ['git:branch_name'],
