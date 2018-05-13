@@ -1,4 +1,4 @@
-SEGMENTS_DIR=home/.local/opt
+SEGMENTS_DIR=home/.local/opt/custom_segments
 PYTHON_VENV=python3 -m venv
 VIRTUALENV_PYTHON=./virtualenv/bin/python3
 VIRTUALENV_PIP=./virtualenv/bin/python3 -m pip
