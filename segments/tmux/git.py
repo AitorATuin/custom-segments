@@ -17,15 +17,13 @@ GIT_STATUS_CMD = ['git', 'status', '--porcelain=v2', '--branch', '--ignored']
 GIT_STASH_CMD1 = ['git', 'stash', 'list']
 
 COLORS = {
-    'gitstatus': {
-        'clean': ['branch:clean'],
-        'dirty': ['branch:dirty'],
-        'broken': ['branch:broken'],
-        'default': ['branch:clean'],
-    },
-    'branch': ['branch:name'],
-    'files': ['files:info'],
-    'stash': ['files:info'],
+    'gitstatus_clean': ['git:branch_clean'],
+    'gistatus_dirty': ['git:branch_dirty'],
+    'gitstatus_broken': ['git:branch_broken'],
+    'gitstatus_default': ['git:branch_clean'],
+    'branch': ['git:branch_name'],
+    'files': ['git:files_info'],
+    'stash': ['git:files_info'],
     'red': ['battery_full'],
 }
 
@@ -40,19 +38,19 @@ class GitStatus(Enum):
 
     def segment(self) -> Seg:
         contents = ''
-        highlight_groups = []
+        highlight_groups = []  # type: List[str]
         if self == GitStatus.CLEAN:
             contents = '✔'
-            highlight_groups = COLORS['gitstatus']['clean']
+            highlight_groups = COLORS['gitstatus_clean']
         elif self == GitStatus.DIRTY:
             contents = '⨀ '
-            highlight_groups = COLORS['gitstatus']['dirty']
+            highlight_groups = COLORS['gitstatus_dirty']
         elif self == GitStatus.BROKEN:
             contents = '✘'
-            highlight_groups = COLORS['gitstatus']['broken']
+            highlight_groups = COLORS['gitstatus_broken']
         else:
             contents = '⁉'
-            highlight_groups = COLORS['gitstatus']['default']
+            highlight_groups = COLORS['gitstatus_default']
 
         return {
             'contents': contents,
@@ -76,19 +74,27 @@ class GitRepo(NamedTuple):
     stashed: int
     status: GitStatus
 
-    def files_segment(self) -> Optional[Seg]:
-        files_info = []
-        if self.staged:
-            files_info.append('⚫{}'.format(len(self.staged)))
-        if self.unstaged:
-            files_info.append('±{}'.format(len(self.unstaged)))
-        if self.untracked: 
-            files_info.append('…{}'.format(len(self.untracked)))
+    def _files_segment(self, contents: str, segment_type: str='files') -> Seg:
         return {
-            'contents': '╱'.join(files_info),
+            'contents': contents,
             'draw_inner_divider': True,
-            'highlight_groups': COLORS['files']
+            'highlight_groups': COLORS[segment_type]
         }
+
+    def staged_segment(self) -> Optional[Seg]:
+        if self.staged:
+            return self._files_segment('⚫{}'.format(len(self.staged)))
+        return None
+
+    def unstaged_segment(self) -> Optional[Seg]:
+        if self.unstaged:
+           return self._files_segment('±{}'.format(len(self.unstaged)))
+        return None
+
+    def untracked_segment(self) -> Optional[Seg]:
+        if self.untracked:
+            return self._files_segment('…{}'.format(len(self.untracked)))
+        return None
 
     def branch_segment(self) -> Optional[Seg]:
         contents = '{}'.format(self.branch.head)
@@ -109,12 +115,6 @@ class GitRepo(NamedTuple):
                 'highlight_groups' : COLORS['stash']
             }
         return None
-
-    def red_segment(self) -> Optional[Seg]:
-        return {
-            'contents': '☭',
-            'highlight_groups': COLORS['red']
-        }
 
 
 class ParseError(Exception):
@@ -252,11 +252,12 @@ class GitSegment(Segment):
 
         if git:
             segments = [
-                git.branch_segment(),
                 git.status_segment(),
+                git.branch_segment(),
                 git.stash_segment(),
-                git.files_segment(),
-                git.red_segment(),
+                git.staged_segment(),
+                git.unstaged_segment(),
+                git.untracked_segment(),
             ]
             pl.debug('Segments are %s' % segments)
             return [s for s in segments if s]
