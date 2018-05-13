@@ -1,3 +1,4 @@
+SEGMENTS_DIR=home/.local/opt
 PYTHON_VENV=python3 -m venv
 VIRTUALENV_PYTHON=./virtualenv/bin/python3
 VIRTUALENV_PIP=./virtualenv/bin/python3 -m pip
@@ -16,11 +17,11 @@ virtualenv:
 
 lint: virtualenv
 	@echo Running linter
-	@MYPYPATH=mystubs $(VIRTUALENV_MYPY) -m mypy -p segments
+	@MYPYPATH=mystubs:$(SEGMENTS_DIR) $(VIRTUALENV_MYPY) -m mypy -p segments
 
 test: virtualenv
 	@echo Running tests
-	@$(VIRTUALENV_PYTEST) tests
+	@PYTHONPATH=$(SEGMENTS_DIR) $(VIRTUALENV_PYTEST) tests
 
 clean:
 	@echo Cleaning sources
