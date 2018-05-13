@@ -7,6 +7,8 @@ VIRTUALENV_PYTEST=./virtualenv/bin/python3 -m pytest -v
 
 .PHONY: test lint
 
+all: lint test
+
 virtualenv:
 	@echo Building virtualenv
 	@$(PYTHON_VENV) virtualenv && \
