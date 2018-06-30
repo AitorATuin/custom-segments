@@ -13,8 +13,8 @@ BRANCH_UPSTREAM_REGEX = BRANCH_HEAD_REGEX
 BRANCH_AB_REGEX = re.compile('#.+ \+(\d) -(\d)$')
 BRANCH_STAGED_REGEX = re.compile('\w\.')
 BRANCH_UNSTAGED_REGEX = re.compile('\.\w')
-GIT_STATUS_CMD = ['git', 'status', '--porcelain=v2', '--branch', '--ignored']
-GIT_STASH_CMD1 = ['git', 'stash', 'list']
+GIT_STATUS_CMD = ['git', '--no-optional-locks', 'status', '--porcelain=v2', '--branch', '--ignored']
+GIT_STASH_CMD1 = ['git', '--no-optional-locks', 'stash', 'list']
 
 COLORS = {
     'gitstatus_clean': ['git:branch_clean'],
